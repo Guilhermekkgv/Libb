@@ -116,31 +116,6 @@ function Library.Main(Name, X, Y)
         ClipsDescendants = true
     })
 
-    local Border = CreateModule.Instance("Frame", {
-        Name = "Border",
-        Parent = Topbar,
-        BackgroundColor3 = Color3.fromRGB(30, 30, 35),
-        BackgroundTransparency = 0.99,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(0, 550, 0, 350),
-        ZIndex = 5
-    })
-
-    CreateModule.Instance("UIStroke", {
-        Parent = Border,
-        Name = "Stroke",
-        Thickness = 1,
-        Color = Library.Theme.AccentColor,
-        Transparency = 0.5
-    })
-
-    CreateModule.Instance("UICorner", {
-        Parent = Border,
-        Name = "Corner",
-        CornerRadius = UDim.new(0, 5)
-    })
-
     spawn(function()
         wait(0.2)
         TweenService:Create(Load, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
@@ -175,22 +150,30 @@ function Library.Main(Name, X, Y)
         HorizontalAlignment = Enum.HorizontalAlignment.Center
     })
 
-    local TabsButtons = CreateModule.Instance("Frame", {
+    local TabsButtons = CreateModule.Instance("ScrollingFrame", {
         Parent = Topbar,
         Name = "TabsButtons",
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         Position = UDim2.new(0.3, 0, 0, 0),
         Size = UDim2.new(0.7, 0, 1, 0),
-        ZIndex = 3
+        ZIndex = 3,
+        ScrollBarThickness = 3,
+        ScrollBarImageTransparency = 0.9,
+        ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
+        CanvasSize = UDim2.new(0, 0, 0, 0)
     })
 
-    CreateModule.Instance("UIListLayout", {
+    local ButtonsList = CreateModule.Instance("UIListLayout", {
         Parent = TabsButtons,
-        FillDirection = Enum.FillDirection.Horizontal,
+        FillDirection = Enum.FillDirection.Vertical,
         SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 10)
+        Padding = UDim.new(0, 5)
     })
+
+    ButtonsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabsButtons.CanvasSize = UDim2.new(0, 0, 0, ButtonsList.AbsoluteContentSize.Y + 4)
+    end)
 
     InputService.InputBegan:Connect(function(input, IsTyping)
         if input.KeyCode == Enum.KeyCode[Library.Theme.HideKey] and not IsTyping then
@@ -215,13 +198,12 @@ function Library.Main(Name, X, Y)
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
             Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0.15, 0, 1, 0),
+            Size = UDim2.new(0, 100, 0, 25),
             Font = Enum.Font[Library.Theme.Font],
             Text = Text,
             TextSize = 15,
             TextXAlignment = Enum.TextXAlignment.Center,
             AutoButtonColor = false,
-            AutomaticSize = Enum.AutomaticSize.X,
             ZIndex = 3
         })
 
@@ -273,27 +255,11 @@ function Library.Main(Name, X, Y)
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
             Position = UDim2.new(0.015, 0, 0.015, 0),
-            Size = UDim2.new(0.5, 0, 1, 0)
-        })
-
-        local PageList2 = CreateModule.Instance("Frame", {
-            Parent = Page,
-            Name = "PageList2",
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0.52, 0, 0.015, 0),
-            Size = UDim2.new(0.5, 0, 1, 0)
+            Size = UDim2.new(1, 0, 1, 0)
         })
 
         local ElementsList = CreateModule.Instance("UIListLayout", {
             Parent = PageList,
-            Padding = UDim.new(0, 15),
-            HorizontalAlignment = Enum.HorizontalAlignment.Left,
-            SortOrder = Enum.SortOrder.LayoutOrder
-        })
-
-        local ElementsList2 = CreateModule.Instance("UIListLayout", {
-            Parent = PageList2,
             Padding = UDim.new(0, 15),
             HorizontalAlignment = Enum.HorizontalAlignment.Left,
             SortOrder = Enum.SortOrder.LayoutOrder
@@ -321,26 +287,6 @@ function Library.Main(Name, X, Y)
 
         CreateModule.Instance("Frame", {
             Parent = PageList,
-            Name = "ign",
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0, 0, 0, 5),
-            LayoutOrder = 999
-        })
-
-        CreateModule.Instance("Frame", {
-            Parent = PageList2,
-            Name = "ign",
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0, 0, 0, 0),
-            LayoutOrder = -99
-        })
-
-        CreateModule.Instance("Frame", {
-            Parent = PageList2,
             Name = "ign",
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
@@ -380,22 +326,17 @@ function Library.Main(Name, X, Y)
 
         local InPage = {}
 
-        function InPage.Button(Text, func)
-            local Column = PageList
-            if ElementsList.AbsoluteContentSize.Y > ElementsList2.AbsoluteContentSize.Y then
-                Column = PageList2
-            end
-
+        function InPage.Button(config)
             local Button = CreateModule.Instance("TextButton", {
-                Parent = Column,
-                Name = Text,
+                Parent = PageList,
+                Name = config.Name,
                 BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15),
                 BorderSizePixel = 1,
                 BorderColor3 = Color3.fromRGB(40, 40, 40),
                 Position = UDim2.new(0, 0, 0, 0),
                 Size = UDim2.new(0.95, 0, 0, 20),
                 Font = Enum.Font[Library.Theme.Font],
-                Text = Text,
+                Text = config.Name,
                 TextSize = 16,
                 TextColor3 = Darker(Library.Theme.FontColor, 1.5),
                 TextXAlignment = Enum.TextXAlignment.Center,
@@ -433,7 +374,7 @@ function Library.Main(Name, X, Y)
 
             Button.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.Touch then
-                    spawn(function() func() end)
+                    spawn(function() config.Callback() end)
                 end
             end)
 
@@ -441,106 +382,10 @@ function Library.Main(Name, X, Y)
             return Button
         end
 
-        function InPage.KeyBind(Text, func, defkey)
-            local Column = PageList
-            if ElementsList.AbsoluteContentSize.Y > ElementsList2.AbsoluteContentSize.Y then
-                Column = PageList2
-            end
-
-            local Keybind = CreateModule.Instance("TextLabel", {
-                Parent = Column,
-                Name = Text or "Keybind",
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                Position = UDim2.new(0, 0, 0, 0),
-                Size = UDim2.new(0.95, 0, 0, 25),
-                Font = Enum.Font[Library.Theme.Font],
-                Text = "",
-                TextSize = 16,
-                TextColor3 = Darker(Library.Theme.FontColor, 1.5),
-                TextXAlignment = Enum.TextXAlignment.Left
-            })
-
-            CreateModule.Instance("TextLabel", {
-                Parent = Keybind,
-                Name = "Label",
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                BorderColor3 = Color3.fromRGB(60, 60, 60),
-                Position = UDim2.new(0, 60, 0, 0),
-                Size = UDim2.new(1, -50, 1, 0),
-                Font = Enum.Font[Library.Theme.Font],
-                TextColor3 = Darker(Library.Theme.FontColor, 1.5),
-                Text = Text,
-                TextSize = 16,
-                TextXAlignment = Enum.TextXAlignment.Left
-            })
-
-            local Keybinder = CreateModule.Instance("TextButton", {
-                Parent = Keybind,
-                BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15),
-                BorderSizePixel = 0,
-                AnchorPoint = Vector2.new(0, 0.5),
-                Position = UDim2.new(0, 0, 0.5, 0),
-                Size = UDim2.new(0, 50, 0, 20),
-                Font = Enum.Font[Library.Theme.Font],
-                Text = defkey or "...",
-                TextSize = 16,
-                TextColor3 = Darker(Library.Theme.FontColor, 1.5),
-                TextXAlignment = Enum.TextXAlignment.Center,
-                AutoButtonColor = false
-            })
-
-            CreateModule.Instance("UICorner", {
-                Parent = Keybinder,
-                Name = "Corner",
-                CornerRadius = UDim.new(0, 5)
-            })
-
-            CreateModule.Instance("UIStroke", {
-                Parent = Keybinder,
-                Name = "Stroke",
-                Thickness = 1,
-                Color = Color3.fromRGB(40, 40, 40),
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-            })
-
-            local Picked, Picking = false, false
-
-            local Key = defkey or nil
-            InputService.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Keyboard and Picking and input.KeyCode ~= Enum.KeyCode[Library.Theme.HideKey] then
-                    Key = tostring(input.KeyCode):gsub("Enum.KeyCode.", "")
-                    Picked = true
-                end
-            end)
-
-            Keybinder.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    Picking = true
-                    Keybinder.Text = "..."
-                    spawn(function()
-                        repeat wait() until Picked
-                        Keybinder.Text = Key
-                        spawn(function() func(Key) end)
-                        Picking = false
-                        Picked = false
-                    end)
-                end
-            end)
-
-            AddToReg(Keybind)
-        end
-
-        function InPage.Checkbox(Text, func, defbool)
-            local Column = PageList
-            if ElementsList.AbsoluteContentSize.Y > ElementsList2.AbsoluteContentSize.Y then
-                Column = PageList2
-            end
-
+        function InPage.Checkbox(config)
             local Checkbox = CreateModule.Instance("TextButton", {
-                Parent = Column,
-                Name = Text,
+                Parent = PageList,
+                Name = config.Name,
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0,
                 BorderColor3 = Color3.fromRGB(60, 60, 60),
@@ -576,7 +421,7 @@ function Library.Main(Name, X, Y)
                 Position = UDim2.new(0, 27, 0, 0),
                 Size = UDim2.new(1, -25, 1, 0),
                 Font = Enum.Font[Library.Theme.Font],
-                Text = Text,
+                Text = config.Name,
                 TextSize = 16,
                 TextXAlignment = Enum.TextXAlignment.Left
             })
@@ -586,7 +431,7 @@ function Library.Main(Name, X, Y)
                 Name = "IsActive"
             })
 
-            IsActive.Value = defbool or false
+            IsActive.Value = config.Default or false
 
             local Checked = CreateModule.Instance("Frame", {
                 Parent = Checkbox,
@@ -615,10 +460,10 @@ function Library.Main(Name, X, Y)
             IsActive.Changed:Connect(function()
                 if IsActive.Value then
                     TweenService:Create(Checked, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.AccentColor}):Play()
-                    spawn(function() func(IsActive.Value) end)
+                    spawn(function() config.Callback(IsActive.Value) end)
                 else
                     TweenService:Create(Checked, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
-                    spawn(function() func(IsActive.Value) end)
+                    spawn(function() config.Callback(IsActive.Value) end)
                 end
             end)
 
@@ -632,15 +477,10 @@ function Library.Main(Name, X, Y)
             return Checkbox
         end
 
-        function InPage.Slider(Text, min, max, func, precise, defvalue)
-            local Column = PageList
-            if ElementsList.AbsoluteContentSize.Y > ElementsList2.AbsoluteContentSize.Y then
-                Column = PageList2
-            end
-
+        function InPage.Slider(config)
             local Slider = CreateModule.Instance("TextLabel", {
-                Parent = Column,
-                Name = Text,
+                Parent = PageList,
+                Name = config.Name,
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0,
                 BorderColor3 = Color3.fromRGB(60, 60, 60),
@@ -648,7 +488,7 @@ function Library.Main(Name, X, Y)
                 Size = UDim2.new(0.95, 0, 0, 40),
                 Font = Enum.Font[Library.Theme.Font],
                 TextColor3 = Darker(Library.Theme.FontColor, 1.5),
-                Text = Text,
+                Text = config.Name,
                 TextSize = 16,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 TextYAlignment = Enum.TextYAlignment.Top
@@ -676,7 +516,7 @@ function Library.Main(Name, X, Y)
                 Size = UDim2.new(1, 0, 1, 0),
                 Font = Enum.Font[Library.Theme.Font],
                 TextColor3 = Darker(Library.Theme.FontColor, 1.5),
-                Text = tostring(defvalue) .. "/" .. max,
+                Text = tostring(config.Default) .. "/" .. config.Max,
                 TextSize = 16,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 ZIndex = 2
@@ -713,25 +553,25 @@ function Library.Main(Name, X, Y)
             })
 
             local function UpdateSlider(val)
-                local percent = (val - min) / (max - min)
+                local percent = (val - config.Min) / (config.Max - config.Min)
                 percent = math.clamp(percent, 0, 1)
                 Progress:TweenSize(UDim2.new(percent, 0, 1, 0), "Out", "Sine", 1, true)
             end
 
-            UpdateSlider(defvalue)
+            UpdateSlider(config.Default)
 
             local IsSliding, Dragging = false, false
-            local RealValue = defvalue
+            local RealValue = config.Default
             local value
 
             local function move(posX)
                 local pos = UDim2.new(math.clamp((posX - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1), 0, 1, 0)
                 local size = UDim2.new(math.clamp((posX - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1), 0, 1, 0)
                 Progress:TweenSize(size, "Out", "Quart", 0.2, true)
-                RealValue = (((pos.X.Scale * max) / max) * (max - min) + min)
-                value = (precise and string.format("%.1f", tostring(RealValue))) or (math.floor(RealValue))
-                ValueLabel.Text = tostring(value) .. "/" .. max
-                func(value)
+                RealValue = (((pos.X.Scale * config.Max) / config.Max) * (config.Max - config.Min) + config.Min)
+                value = (config.Precise and string.format("%.1f", tostring(RealValue))) or (math.floor(RealValue))
+                ValueLabel.Text = tostring(value) .. "/" .. config.Max
+                config.Callback(value)
             end
 
             Bar.InputBegan:Connect(function(input)
@@ -774,15 +614,10 @@ function Library.Main(Name, X, Y)
             return Slider
         end
 
-        function InPage.Dropdown(Text, Selectables, ind, func)
-            local Column = PageList
-            if ElementsList.AbsoluteContentSize.Y > ElementsList2.AbsoluteContentSize.Y then
-                Column = PageList2
-            end
-
+        function InPage.Dropdown(config)
             local Dropdown = CreateModule.Instance("Frame", {
-                Parent = Column,
-                Name = Text,
+                Parent = PageList,
+                Name = config.Name,
                 BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15),
                 BorderSizePixel = 0,
                 BorderColor3 = Color3.fromRGB(40, 40, 40),
@@ -800,7 +635,7 @@ function Library.Main(Name, X, Y)
                 Position = UDim2.new(0, 0, 0, 0),
                 Size = UDim2.new(1, 0, 0, 20),
                 Font = Enum.Font[Library.Theme.Font],
-                Text = "  " .. Text,
+                Text = "  " .. config.Name,
                 TextSize = 16,
                 TextColor3 = Darker(Library.Theme.FontColor, 1.5),
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -933,7 +768,7 @@ function Library.Main(Name, X, Y)
 
                 Selectable.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.Touch then
-                        spawn(function() func(string, value) end)
+                        spawn(function() config.Callback(string, value) end)
                         DropdownButton.Text = "  " .. string
                         Dropdown:TweenSize(UDim2.new(0.95, 0, 0, 20), "Out", "Quart", 0.3, true)
                         List:TweenSize(UDim2.new(1, 0, 0, 0), "Out", "Quart", 0.3, true)
@@ -943,10 +778,10 @@ function Library.Main(Name, X, Y)
                 end)
             end
 
-            for string, value in pairs(Selectables) do
-                if ind == 1 then
+            for string, value in pairs(config.Values) do
+                if config.Index == 1 then
                     NewSelectable(tostring(string), tostring(value))
-                elseif ind == 2 then
+                elseif config.Index == 2 then
                     NewSelectable(tostring(value), tostring(string))
                 end
             end
@@ -960,9 +795,9 @@ function Library.Main(Name, X, Y)
                 end
                 wait()
                 for string, value in pairs(selec) do
-                    if ind == 1 then
+                    if config.Index == 1 then
                         NewSelectable(tostring(string), tostring(value))
-                    elseif ind == 2 then
+                    elseif config.Index == 2 then
                         NewSelectable(tostring(value), tostring(string))
                     end
                 end
