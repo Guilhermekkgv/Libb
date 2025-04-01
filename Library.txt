@@ -102,7 +102,7 @@ function Library.Main(Name, X, Y)
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         Position = UDim2.new(0, 10, 0, 0),
-        Size = UDim2.new(0.2, 0, 1, 0),
+        Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 3
     })
 
@@ -130,13 +130,38 @@ function Library.Main(Name, X, Y)
         CornerRadius = UDim.new(0, 5)
     })
 
+    local TabContainer = CreateModule.Instance("ScrollingFrame", {
+        Parent = Container,
+        Name = "TabContainer",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 5, 0, 5),
+        Size = UDim2.new(0, 150, 1, -10),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 3,
+        ScrollBarImageTransparency = 0.9,
+        ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    })
+
+    local TabList = CreateModule.Instance("UIListLayout", {
+        Parent = TabContainer,
+        FillDirection = Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 5)
+    })
+
+    TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 4)
+    end)
+
     local Pages = CreateModule.Instance("Frame", {
         Parent = Container,
         Name = "Tabs",
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 1, 0)
+        Position = UDim2.new(0, 160, 0, 5),
+        Size = UDim2.new(0, 385, 1, -10)
     })
 
     local PageLayout = CreateModule.Instance("UIPageLayout", {
@@ -149,31 +174,6 @@ function Library.Main(Name, X, Y)
         FillDirection = Enum.FillDirection.Vertical,
         HorizontalAlignment = Enum.HorizontalAlignment.Center
     })
-
-    local TabsButtons = CreateModule.Instance("ScrollingFrame", {
-        Parent = Topbar,
-        Name = "TabsButtons",
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0.3, 0, 0, 0),
-        Size = UDim2.new(0.7, 0, 1, 0),
-        ZIndex = 3,
-        ScrollBarThickness = 3,
-        ScrollBarImageTransparency = 0.9,
-        ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
-        CanvasSize = UDim2.new(0, 0, 0, 0)
-    })
-
-    local ButtonsList = CreateModule.Instance("UIListLayout", {
-        Parent = TabsButtons,
-        FillDirection = Enum.FillDirection.Vertical,
-        SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 5)
-    })
-
-    ButtonsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabsButtons.CanvasSize = UDim2.new(0, 0, 0, ButtonsList.AbsoluteContentSize.Y + 4)
-    end)
 
     InputService.InputBegan:Connect(function(input, IsTyping)
         if input.KeyCode == Enum.KeyCode[Library.Theme.HideKey] and not IsTyping then
@@ -193,18 +193,31 @@ function Library.Main(Name, X, Y)
         TabCount = TabCount + 1
 
         local TabButton = CreateModule.Instance("TextButton", {
-            Parent = TabsButtons,
-            Name = "TabsButtons",
-            BackgroundTransparency = 1,
+            Parent = TabContainer,
+            Name = "TabButton",
+            BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15),
             BorderSizePixel = 0,
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0, 100, 0, 25),
+            Size = UDim2.new(1, -10, 0, 30),
             Font = Enum.Font[Library.Theme.Font],
             Text = Text,
             TextSize = 15,
             TextXAlignment = Enum.TextXAlignment.Center,
             AutoButtonColor = false,
             ZIndex = 3
+        })
+
+        CreateModule.Instance("UICorner", {
+            Parent = TabButton,
+            Name = "Corner",
+            CornerRadius = UDim.new(0, 5)
+        })
+
+        CreateModule.Instance("UIStroke", {
+            Parent = TabButton,
+            Name = "Stroke",
+            Thickness = 1,
+            Color = Color3.fromRGB(40, 40, 40),
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
 
         local IsTabActive = CreateModule.Instance("BoolValue", {
@@ -219,8 +232,10 @@ function Library.Main(Name, X, Y)
             if input.UserInputType == Enum.UserInputType.Touch then
                 if IsTabActive.Value then
                     TweenService:Create(TabButton, TweenInfo.new(0.3), {TextColor3 = Library.Theme.FontColor}):Play()
+                    TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
                 else
                     TweenService:Create(TabButton, TweenInfo.new(0.3), {TextColor3 = Darker(Library.Theme.FontColor, 1.5)}):Play()
+                    TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(32, 32, 37)}):Play()
                 end
             end
         end)
@@ -229,8 +244,10 @@ function Library.Main(Name, X, Y)
             if input.UserInputType == Enum.UserInputType.Touch then
                 if not IsTabActive.Value then
                     TweenService:Create(TabButton, TweenInfo.new(0.3), {TextColor3 = Darker(Library.Theme.FontColor, 2)}):Play()
+                    TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
                 else
                     TweenService:Create(TabButton, TweenInfo.new(0.3), {TextColor3 = Darker(Library.Theme.FontColor, 1.2)}):Play()
+                    TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
                 end
             end
         end)
@@ -241,7 +258,7 @@ function Library.Main(Name, X, Y)
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
             Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(0.95, 0, 1, 0),
+            Size = UDim2.new(1, 0, 1, 0),
             CanvasSize = UDim2.new(0, 0, 0, 0),
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             ScrollBarThickness = 3,
@@ -308,14 +325,16 @@ function Library.Main(Name, X, Y)
                     end
                 end
 
-                for _, v in pairs(TabsButtons:GetChildren()) do
+                for _, v in pairs(TabContainer:GetChildren()) do
                     if v.ClassName == "TextButton" and v.Name ~= Text then
                         v.IsActive.Value = false
                         TweenService:Create(v, TweenInfo.new(0.3), {TextColor3 = Darker(Library.Theme.FontColor, 2)}):Play()
+                        TweenService:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
                     end
                 end
                 IsTabActive.Value = true
                 TweenService:Create(TabButton, TweenInfo.new(0.3), {TextColor3 = Library.Theme.FontColor}):Play()
+                TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = Darker(Color3.fromRGB(32, 32, 37), 1.15)}):Play()
             end
         end)
 
